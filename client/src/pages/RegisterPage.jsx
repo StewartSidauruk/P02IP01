@@ -11,14 +11,19 @@ import {
   Lock,
 } from "lucide-react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../configs/firebase";
+import { auth, db } from "../configs/firebase";
 import { useNavigate } from "react-router";
+import { doc, setDoc } from "firebase/firestore";
+import Swal from "sweetalert2";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
 
-async function handleSwitch(e) {
+  async function handleSwitch(e) {
     e.preventDefault();
     try {
       navigate("/auth/login");
@@ -26,6 +31,42 @@ async function handleSwitch(e) {
       const errorCode = error.code;
       const errorMessage = error.message;
       console.log(errorCode, "-", errorMessage);
+    }
+  }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    try {
+      const userRegistered = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      await setDoc(doc(db, "users", userRegistered.user.uid), {
+        email: email,
+        name: name,
+        role: "user",
+      });
+      navigate("/");
+    } catch (error) {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, "-", errorMessage);
+
+      Swal.fire({
+        icon: "error",
+        title: "Registration Failed",
+        text: error.message || "Please check your details and try again.",
+        background: "rgba(17, 24, 39, 0.9)",
+        color: "#fff",
+        confirmButtonColor: "#6366f1",
+        customClass: {
+          popup:
+            "rounded-2xl shadow-2xl backdrop-blur-xl border border-white/10",
+          title: "text-lg font-bold",
+          htmlContainer: "text-sm text-gray-300",
+        },
+      });
     }
   }
 
@@ -93,139 +134,146 @@ async function handleSwitch(e) {
                 TechVault
               </h1>
             </div>
-
-            <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
-              <div className="text-center mb-8">
-                <h3 className="text-3xl font-bold text-white mb-2">
-                  Create Account
-                </h3>
-                <p className="text-gray-400">
-                  Sign up to start your tech journey
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="text"
-                      placeholder="Enter your full name"
-                      className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:bg-white/10"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:bg-white/10"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Create a strong password"
-                      className="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:bg-white/10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors cursor-pointer"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-5 h-5" />
-                      ) : (
-                        <Eye className="w-5 h-5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                  <p className="text-sm text-gray-300 mb-2">
-                    Password must contain:
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="flex items-center text-gray-400">
-                      <div className="w-2 h-2 rounded-full bg-gray-600 mr-2"></div>
-                      <span>8+ characters</span>
-                    </div>
-                    <div className="flex items-center text-gray-400">
-                      <div className="w-2 h-2 rounded-full bg-gray-600 mr-2"></div>
-                      <span>One uppercase</span>
-                    </div>
-                    <div className="flex items-center text-gray-400">
-                      <div className="w-2 h-2 rounded-full bg-gray-600 mr-2"></div>
-                      <span>One lowercase</span>
-                    </div>
-                    <div className="flex items-center text-gray-400">
-                      <div className="w-2 h-2 rounded-full bg-gray-600 mr-2"></div>
-                      <span>One number</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 mt-1 rounded border-gray-600 bg-white/5 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
-                  />
-                  <label className="text-sm text-gray-300 leading-relaxed">
-                    I agree to the{" "}
-                    <a
-                      href="#"
-                      className="text-blue-400 hover:text-blue-300 transition-colors"
-                    >
-                      Terms of Service
-                    </a>{" "}
-                    and{" "}
-                    <a
-                      href="#"
-                      className="text-blue-400 hover:text-blue-300 transition-colors"
-                    >
-                      Privacy Policy
-                    </a>
-                  </label>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/25 flex items-center justify-center group cursor-pointer"
-                >
-                  Create Account
-                  <ArrowRight className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" />
-                </button>
-
-                <div className="text-center mt-8">
+            <form onSubmit={handleRegister} action="">
+              <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
+                <div className="text-center mb-8">
+                  <h3 className="text-3xl font-bold text-white mb-2">
+                    Create Account
+                  </h3>
                   <p className="text-gray-400">
-                    Already have an account?{" "}
-                    <a
-                      onClick={handleSwitch}
-                      className="text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer"
-                    >
-                      Sign in here
-                    </a>
+                    Sign up to start your tech journey
                   </p>
                 </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        placeholder="Enter your full name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:bg-white/10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:bg-white/10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Create a strong password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:bg-white/10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                    <p className="text-sm text-gray-300 mb-2">
+                      Password must contain:
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center text-gray-400">
+                        <div className="w-2 h-2 rounded-full bg-gray-600 mr-2"></div>
+                        <span>8+ characters</span>
+                      </div>
+                      <div className="flex items-center text-gray-400">
+                        <div className="w-2 h-2 rounded-full bg-gray-600 mr-2"></div>
+                        <span>One uppercase</span>
+                      </div>
+                      <div className="flex items-center text-gray-400">
+                        <div className="w-2 h-2 rounded-full bg-gray-600 mr-2"></div>
+                        <span>One lowercase</span>
+                      </div>
+                      <div className="flex items-center text-gray-400">
+                        <div className="w-2 h-2 rounded-full bg-gray-600 mr-2"></div>
+                        <span>One number</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start space-x-3">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 mt-1 rounded border-gray-600 bg-white/5 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+                    />
+                    <label className="text-sm text-gray-300 leading-relaxed">
+                      I agree to the{" "}
+                      <a
+                        href="#"
+                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        Terms of Service
+                      </a>{" "}
+                      and{" "}
+                      <a
+                        href="#"
+                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        Privacy Policy
+                      </a>
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/25 flex items-center justify-center group cursor-pointer"
+                  >
+                    Create Account
+                    <ArrowRight className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" />
+                  </button>
+
+                  <div className="text-center mt-8">
+                    <p className="text-gray-400">
+                      Already have an account?{" "}
+                      <a
+                        onClick={handleSwitch}
+                        className="text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer"
+                      >
+                        Sign in here
+                      </a>
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>

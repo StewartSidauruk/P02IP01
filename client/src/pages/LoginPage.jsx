@@ -3,11 +3,13 @@ import { Eye, EyeOff, Smartphone, Zap, Shield, ArrowRight } from "lucide-react";
 import { auth } from "../configs/firebase";
 import { useNavigate } from "react-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import Swal from "sweetalert2";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   async function handleSwitch(e) {
     e.preventDefault();
@@ -15,6 +17,35 @@ export default function LoginPage() {
       navigate("/auth/register");
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    try {
+      const userLoggedIn = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log(userLoggedIn);
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: "Please check your email and password.",
+        background: "rgba(17, 24, 39, 0.9)",
+        color: "#fff",
+        confirmButtonColor: "#6366f1",
+        customClass: {
+          popup: "rounded-2xl shadow-2xl backdrop-blur-xl border border-white/10",
+          title: "text-lg font-bold",
+          htmlContainer: "text-sm text-gray-300"
+        }
+      });
     }
   }
 
@@ -82,92 +113,97 @@ export default function LoginPage() {
                 Sumsang Tech
               </h1>
             </div>
-
-            <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
-              <div className="text-center mb-8">
-                <h3 className="text-3xl font-bold text-white mb-2">
-                  Welcome Back
-                </h3>
-                <p className="text-gray-400">
-                  Sign in to your account to continue shopping
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:bg-white/10"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:bg-white/10 pr-12"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors cursor-pointer"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-5 h-5" />
-                      ) : (
-                        <Eye className="w-5 h-5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded border-gray-600 bg-white/5 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
-                    />
-                    <span className="ml-2 text-sm text-gray-300">
-                      Remember me
-                    </span>
-                  </label>
-                  <a
-                    href="#"
-                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                  ></a>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/25 flex items-center justify-center group cursor-pointer"
-                >
-                  Sign In
-                  <ArrowRight className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" />
-                </button>
-
-                <div className="text-center mt-8">
+            <form onSubmit={handleLogin}>
+              <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
+                <div className="text-center mb-8">
+                  <h3 className="text-3xl font-bold text-white mb-2">
+                    Welcome Back
+                  </h3>
                   <p className="text-gray-400">
-                    Don't have an account?{" "}
-                    <a
-                      onClick={handleSwitch}
-                      className="text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer"
-                    >
-                      Sign up here
-                    </a>
+                    Sign in to your account to continue shopping
                   </p>
                 </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:bg-white/10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:bg-white/10 pr-12"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 rounded border-gray-600 bg-white/5 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+                      />
+                      <span className="ml-2 text-sm text-gray-300">
+                        Remember me
+                      </span>
+                    </label>
+                    <a
+                      href="#"
+                      className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                    ></a>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/25 flex items-center justify-center group cursor-pointer"
+                  >
+                    Sign In
+                    <ArrowRight className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" />
+                  </button>
+
+                  <div className="text-center mt-8">
+                    <p className="text-gray-400">
+                      Don't have an account?{" "}
+                      <a
+                        onClick={handleSwitch}
+                        className="text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer"
+                      >
+                        Sign up here
+                      </a>
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>
