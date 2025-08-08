@@ -1,29 +1,33 @@
-import './App.css'
+import "./App.css";
 import {
   createBrowserRouter,
   RouterProvider,
   useLocation,
   useNavigate,
-} from 'react-router';import UserLayout from './layouts/UserLayout.jsx';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import MainLayout from './layouts/MainLayout.jsx';
-import HomePage from './pages/HomePage';
-import AuthContextProvider from './contexts/AuthContext.jsx';
+} from "react-router";
+import { useEffect, useContext } from "react";
+import UserLayout from "./layouts/UserLayout.jsx";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import MainLayout from "./layouts/MainLayout.jsx";
+import HomePage from "./pages/HomePage";
+import AuthContextProvider, { AuthContext } from "./contexts/AuthContext.jsx";
+import DetailProduct from "./pages/DetailProduct.jsx";
+import CartPage from "./pages/CartPage.jsx"; // ⬅️ Tambahkan ini
 
 function AdminProtectedPage({ children }) {
   const { role } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
   useEffect(() => {
-    if (role !== 'admin') {
-      navigate('/', {
+    if (role !== "admin") {
+      navigate("/", {
         state: location,
         replace: true,
       });
     }
-    if (role === 'user') {
-      navigate('/', {
+    if (role === "user") {
+      navigate("/", {
         state: location,
         replace: true,
       });
@@ -35,25 +39,33 @@ function AdminProtectedPage({ children }) {
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <MainLayout />,
     children: [
       {
         index: true,
         element: <HomePage />,
       },
+      {
+        path: "product/:id",
+        element: <DetailProduct />,
+      },
+      {
+        path: "cart",
+        element: <CartPage />,
+      },
     ],
   },
   {
-    path: '/auth',
+    path: "/auth",
     element: <UserLayout />,
     children: [
       {
-        path: 'login',
+        path: "login",
         element: <LoginPage />,
       },
       {
-        path: 'register',
+        path: "register",
         element: <RegisterPage />,
       },
     ],
@@ -61,12 +73,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-
   return (
     <AuthContextProvider>
-      <RouterProvider router={router}/>
+      <RouterProvider router={router} />
     </AuthContextProvider>
-  )
+  );
 }
 
-export default App
+export default App;
